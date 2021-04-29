@@ -1,64 +1,68 @@
 {
-	"name": "ClassNameHere",
+  "name": "STARR Data Delivery on Demand",
+  "namespace": "Stanford\\StarrDataDeliveryonDemand",
+  "description": "Customer facing tutorial and dashboard for OMOP data download",
+  "versions": [
+    {
+      "0.1": "Initial"
+    }
+  ],
+  "authors": [
+      {
+          "name": "Srinivasan Boosi",
+          "email": "sboosi@stanfordhealthcare.org",
+          "institution": "Stanford Health Care"
+      },
+      {
+          "name": "Susan Weber",
+          "email": "scweber@stanford.edu",
+          "institution": "Stanford University"
+      }
+  ],
+  "permissions": [
+    "redcap_save_record",
+    "redcap_survey_page_top",
+    "redcap_survey_page"
+  ],
+  "links": {
+    "control-center": [
 
-	"namespace": "Stanford\\ClassNameHere",
-
-	"description": "A template for a REDCap External Module",
-
-	"documentation": "README.md",
-
-	"authors": [
-		{
-			"name": "Andrew Martin",
-			"email": "andy123@stanford.edu",
-			"institution": "Stanford University"
-		}
-	],
-
-	"permissions": [
-		"redcap_module_system_enable",
-		"redcap_module_project_enable",
-		"redcap_module_save_configuration"
-	],
-	
-	"enable-every-page-hooks-on-system-pages": false,	
-
-	"links": {
-		"project": [
-
-		],
-		"control-center": [
-
-		]
-	},
-
-	"no-auth-pages": [
-
-	],
-
-	"project-settings": [
-		{
-			"key": "enable-project-debug-logging",
-			"name": "<b>Enable Debug Logging</b><br><i>(optional)</i> Requires installation and configuration of emLogger",
-			"required": false,
-			"type": "checkbox"
-		}
-	],
-
-
-	"system-settings": [
-		{
-			"key": "enable-system-debug-logging",
-			"name": "<b>Enable Debug Logging (system-wide)</b><i>(optional)</i> Requires installation and configuration of emLogger",
-			"required": false,
-			"type": "checkbox"
-		}
-	],
-
-	"compatibility": {
-		"php-version-min": "",
-		"php-version-max": "",
-		"redcap-version-min": "",
-		"redcap-version-max": ""
-	}
+    ],
+    "project": [
+     {
+        "name": "Intake Form: Job Status",
+        "icon": "gear",
+        "url": "pages/jobStatus.php"
+     },
+     {
+      "name": "Intake Form: Form Validation",
+      "icon": "gear",
+      "url": "src/IntakeFormValidation.php?NOAUTH"
+     }
+    ]
+  },
+  "no-auth-pages": [
+    "src/IntakeFormValidation"
+  ],
+  "system-settings": [
+    {
+      "key": "enable-system-debug-logging",
+      "name": "<b>Enable Debug Logging</b><br>If you have the Stanford emLogger external module installed and configured, you can enable additional debug-level logging through this checkbox</b>",
+      "required": false,
+      "type": "checkbox"
+    }
+  ],
+  "project-settings": [
+    {
+      "key": "description",
+      "name": "Request custom OMOP datasets from the STARR datalake",
+      "type": "descriptive"
+    },
+    {
+      "key": "enable-project-debug-logging",
+      "name": "<b>Enable Debug Logging</b>",
+      "required": false,
+      "type": "checkbox"
+    }
+  ]
 }

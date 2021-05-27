@@ -30,14 +30,9 @@
     ],
     "project": [
      {
-        "name": "Intake Form: Job Status",
+        "name": "Data Deliveries",
         "icon": "gear",
-        "url": "pages/jobStatus.php"
-     },
-     {
-      "name": "Intake Form: Form Validation",
-      "icon": "gear",
-      "url": "src/IntakeFormValidation.php?NOAUTH"
+        "url": "pages/d3dashboard.php"
      }
     ]
   },
@@ -50,7 +45,13 @@
       "name": "<b>Enable Debug Logging</b><br>If you have the Stanford emLogger external module installed and configured, you can enable additional debug-level logging through this checkbox</b>",
       "required": false,
       "type": "checkbox"
-    }
+    },
+      {
+          "key": "url_to_id_api",
+          "name": "<b>URL to the ID API</b>",
+          "required": true,
+          "type": "text"
+      }
   ],
   "project-settings": [
     {

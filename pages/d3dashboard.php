@@ -141,7 +141,7 @@ foreach($recordList as $key => $eventData) {
             </p>
         </li>
         <li><p>
-            Data Delivery: If you do not yet have a Nero project, please contact the <a href="https://med.stanford.edu/nero.html">Nero</a> support team to get one.
+            Data Delivery: The D3 service only delivers data to Big Query on Nero. If you do not yet have a Nero project, please contact the <a href="https://med.stanford.edu/nero.html">Nero</a> support team to get one.
             </p>
         </li>
     </ol>
@@ -214,7 +214,7 @@ foreach($recordList as $key => $eventData) {
         If you answered "No" to the "Is this research" question and left the IRB number blank, this question will pop up
         prompting you for your DPA number.
     </p>
-    <h4> <a id="starr-tools"></a>Postscript: Using STARR Tools to get a list of Stanford MRNs</h4>
+    <h3> <a id="starr-tools"></a>Postscript: Using STARR Tools to get a list of Stanford MRNs</h3>
     <p>As noted above, in order to use identified data for research at Stanford, you must have a valid IRB protocol with associated
         STARR Data Privacy Attestation (DPA). Specifically, in order to use the STARR Tools to download a list of MRNs needed for self-service
         access to OMOP, you must have a DPA that documents your intent to use MRNs in your research. If you do not yet have an IRB with DPA,

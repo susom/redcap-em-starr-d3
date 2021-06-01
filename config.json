@@ -42,13 +42,19 @@
   "system-settings": [
     {
       "key": "enable-system-debug-logging",
-      "name": "<b>Enable Debug Logging</b><br>If you have the Stanford emLogger external module installed and configured, you can enable additional debug-level logging through this checkbox</b>",
+      "name": "<b>Enable Debug Logging:</b><br>If you have the Stanford emLogger external module installed and configured, you can enable additional debug-level logging through this checkbox</b>",
       "required": false,
       "type": "checkbox"
     },
       {
+          "key": "token_service_name",
+          "name": "<b>Vertx Token EM Service Name:</b><br/>Valid values: either 'id' for on prem or 'id-gcp' for cloud</b>",
+          "required": true,
+          "type": "text"
+      },
+      {
           "key": "url_to_id_api",
-          "name": "<b>URL to the ID API</b>",
+          "name": "<b>URL to the ID API:</b><br/>URL hostname must match the EM service name, e.g. for 'id' use 'rit.api' and for 'id-gcp' use 'starr.med'",
           "required": true,
           "type": "text"
       }

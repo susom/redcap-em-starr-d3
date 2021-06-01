@@ -17,7 +17,7 @@ class StarrDataDeliveryonDemand extends \ExternalModules\AbstractExternalModule 
         global $module ;
         $module->emError("in retrieveIdToken");
         try {
-            $VTM = \ExternalModules\ExternalModules::getModuleInstance('redcap-em-vertx-token-manager');
+            $VTM = \ExternalModules\ExternalModules::getModuleInstance('vertx_token_manager');
             $module->emError("success instantiating VTM");
         } catch (Exception $ex) {
             $msg = "The Vertx Token Manager module is not enabled, please contact REDCap support.";
@@ -27,7 +27,12 @@ class StarrDataDeliveryonDemand extends \ExternalModules\AbstractExternalModule 
         }
 
         // Get a valid API token from the vertx token manager
-        $service = "id";
+        // Retrieve ID URL from the system settings
+        // $service is a reference to the vertx token manager services, e.g. id or id-gcp
+        // if you specify "id", the url should start with rit.api
+        // if you specify "id-gcp", the url should start with starr.med
+        $service = $module->getSystemSetting("token_service_name");
+        $api_url = $module->getSystemSetting("url_to_id_api");
         $token = $VTM->findValidToken($service);
         if ($token == false) {
             $module->emError("Could not retrieve valid access token for service $service");
@@ -35,8 +40,6 @@ class StarrDataDeliveryonDemand extends \ExternalModules\AbstractExternalModule 
                 "message" => "* Internal Access problem - please contact the REDCap team");
         }
 
-        // Retrieve ID URL from the system settings
-        $api_url = $module->getSystemSetting("url_to_id_api");
 
         return array("status" => 1,
             "token" => $token,

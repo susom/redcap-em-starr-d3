@@ -8,17 +8,17 @@ class StarrDataDeliveryonDemand extends \ExternalModules\AbstractExternalModule 
     use emLoggerTrait;
 
     public function __construct() {
-		parent::__construct();
-		// Other code to run when object is instantiated
-	}
+        parent::__construct();
+        // Other code to run when object is instantiated
+    }
 
-	// used to pick up the access token needed to invoke the MRN validity API
+    // used to pick up the access token needed to invoke the MRN validity API
     function retrieveIdToken() {
         global $module ;
-        $module->emError("in retrieveIdToken");
+        $module->emDebug("in retrieveIdToken");
         try {
             $VTM = \ExternalModules\ExternalModules::getModuleInstance('vertx_token_manager');
-            $module->emError("success instantiating VTM");
+            $module->emDebug("success instantiating VTM");
         } catch (Exception $ex) {
             $msg = "The Vertx Token Manager module is not enabled, please contact REDCap support.";
             $module->emError($msg);
@@ -47,8 +47,75 @@ class StarrDataDeliveryonDemand extends \ExternalModules\AbstractExternalModule 
 
     }
 
+    function validateDate($myDateString) {
+        $myDateString = trim($myDateString);
+        if (strlen ($myDateString) === 0) {
+            return true;
+        }
+        $t = strtotime($myDateString);
+        $ds = date('Y-m-d', $t);
+        if($t > time()) {
+            # date is in the future
+            return false;
+        }
+        $this->emDebug('validating ' . $myDateString . ' ' . $ds . ' ok? ' . ($myDateString === $ds));
+        return $myDateString === $ds;
+    }
+
+    function verifyDates($listWithDates) {
+        // expect
+        //$r = (strstr($print, ',') ? substr($print, 0, strpos($print, ',')) : $print);
+        $newar = array();
+        $l = 0;
+        $m = 0;
+        $n = 0;
+        foreach ($listWithDates as &$value) {
+            $components = explode(',', $value);
+            $newar[] = $components[0];
+            // count the number of commas, record a separate error if dates are missing
+            if (substr_count($value, ',') !== 2) {
+                $m++;
+                continue;
+            }
+            // check the start date
+            if (strlen($components[1]) > 0 && ! $this->validateDate($components[1]) ) {
+                $n ++;
+            }
+            // and the end date
+            if (strlen(trim($components[2])) > 0 && ! $this->validateDate(trim($components[2])) ) {
+                $n ++;
+            }
+            if ($this->validateDate($components[1]) && strlen(trim($components[2])) > 0 && $this->validateDate(trim($components[2])) && strtotime($components[1]) > strtotime(trim($components[2]))) {
+                $l++;
+            }
+        }
+        $returnStruct = array();
+        if ($n === 0 && $l === 0 && $m === 0) {
+            $returnStruct['status'] = 1;
+            $returnStruct['msg'] = ' All dates look ok.';
+        } else {
+            $returnStruct['status'] = 0;
+            $returnStruct['msg'] = '';
+        }
+        $denominator = $m > length($listWithDates) ? $m : length($listWithDates) ; // normalize so you don't get > 100%
+        if  ($n > 0) {
+            $pct = floor($n * 100 / ($denominator * 2));
+            $returnStruct['msg'] .= " Incorrect date format in $n ($pct %) of the supplied dates. ";
+        }
+        if ($m > 0) {
+            $pct = floor($m * 100 / $denominator);
+            $returnStruct['msg'] .= " Incorrect number of columns in $m ($pct %) rows. ";
+        }
+        if  ($l > 0) {
+            $pct = floor($l * 100 / $denominator);
+            $returnStruct['msg'] .= " Start date precedes end date in $l ($pct %) rows. ";
+        }
+        $returnStruct['id_list'] = $newar;
+        return $returnStruct;
+    }
+
     // send the MRNs to the validity API
-    function apiPost($pid, $mrns, $token, $url) {
+    function mrnApiPost($pid, $mrns, $token, $url) {
         global $module ;
         // Use the STARR API to see if these MRNs are valid
         $body = array("mrns" => $mrns);
@@ -105,30 +172,40 @@ class StarrDataDeliveryonDemand extends \ExternalModules\AbstractExternalModule 
             $(document).ready(function(){
             window.onload = function () {
                 var origStopUpload = stopUpload;
+                console.log("in redefinition of stopUpload");
                 stopUpload = function(success,this_field,doc_id,doc_name,study_id,doc_size,event_id,download_page,delete_page,doc_id_hash,instance)
                 {
                     // console.log("in stopUpload");
-                    var newHtml = "<tr id='validation_message-tr'><td colspan='3' class='validationMsg'></td></tr>";
-                    $("#validation_message-tr").replaceWith(newHtml);
-                    aurl =  "$url"  + "&doc_id=" + doc_id;
-                    // console.log( aurl );
-                    $.ajax({
-                        url: aurl ,
-                        timeout: 60000000,
-                        type: 'GET',
-                        dataType: 'html',
-                        success: function (response) {
-                            // console.log('success in ajax callback');
-                            // console.log(response);
-                            var newHtml = "<tr id='validation_message-tr'><td colspan='3' class='validationMsg'>" + response + "</td></tr>";
-                            $("#validation_message-tr").replaceWith(newHtml);
-                        },
-                        error: function (request, error) {
-                            var newHtml = "<tr id='validation_message-tr'><td colspan='3' class='validationMsg'>Unable to validate uploaded file content. Server error: " + JSON.stringify(error) + "</td></tr>";
-                            $("#validation_message-tr").replaceWith(newHtml);
-                            console.log(error);
-                        }
-                    });
+                    // now pick up current select for cohort_of_interest_defn select list
+                    // we know this will be defined as you must select 1, 2, 3, 4 or 5 in order to display the file upload input
+                    var selectedFileType = $("[name='cohort_of_interest_defn']"). children("option:selected"). val();
+                    // only attempt file validation for values 1, 2, 3 or 4
+                    if (selectedFileType ==='1'||selectedFileType ==='2'||selectedFileType ==='3'||selectedFileType ==='4') {
+                        console.log('in validation');
+                        var newHtml = "<tr id='validation_message-tr'><td colspan='3' class='validationMsg'>Validating uploaded file content...</td></tr>";
+                        $("#validation_message-tr").replaceWith(newHtml);
+                        aurl =  "$url"  + "&doc_id=" + doc_id + "&ft=" + selectedFileType;
+                        console.log( aurl );
+                        $.ajax({
+                            url: aurl ,
+                            timeout: 60000000,
+                            type: 'GET',
+                            dataType: 'html',
+                            success: function (response) {
+                                // console.log('success in ajax callback');
+                                // console.log(response);
+                                var newHtml = "<tr id='validation_message-tr'><td colspan='3' class='validationMsg'>" + response + "</td></tr>";
+                                $("#validation_message-tr").replaceWith(newHtml);
+                            },
+                            error: function (request, error) {
+                                var newHtml = "<tr id='validation_message-tr'><td colspan='3' class='validationMsg'>Unable to validate uploaded file content. Server error: " + JSON.stringify(error) + "</td></tr>";
+                                $("#validation_message-tr").replaceWith(newHtml);
+                                console.log(error);
+                            }
+                        });
+                    } else {
+                        console.log ('skipping validation');
+                    }
                     return origStopUpload(success,this_field,doc_id,doc_name,study_id,doc_size,event_id,download_page,delete_page,doc_id_hash,instance);
                 }
             }});

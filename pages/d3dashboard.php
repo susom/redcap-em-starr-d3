@@ -1,25 +1,23 @@
 <?php
-namespace Stanford\IntakeForm;
+namespace Stanford\StarrDataDeliveryonDemand;
 
 use \REDCap;
 
 global $module ;
 
-$module->emDebug("***** I am in jobStatus Page****");
 $fieldList = array('record_id', 'datetime_1','datetime_2','datetime_3','datetime_4','datetime_5','datetime_6','nero_gcp_name', 'irb_number', 'project_title', 'webauth_user', 'dpa_omop', 'dataset_name_omop', 'data_types', 'status') ;
 
 $module->emDebug("*****username :" . $_GET["uname"]) ;
 
-$module->emDebug("*****Global Username :" . $userid) ;
 $sunetid = $_SERVER['REMOTE_USER'];
 $module->emDebug("*****Global Sunet ID :" . $sunetid) ;
 
 if(isset($_GET['uname']) && !empty($_GET['uname'])){
-    $module->emDebug("Printing results for ".$_GET["uname"]." ***********") ;
-    $include_logic = "[webauth_user]='" . $_GET["uname"] . "'" ;
+    $module->emDebug("filter records on username ".$_GET["uname"]) ;
+    $include_logic = "[webauth_user]='" . $_GET["uname"] . "' and [data_types(5)] = '1'" ;
 } else {
     $module->emDebug("Printing results for scweber ***********") ;
-    $include_logic = "[webauth_user]='scweber'" ;
+    $include_logic = "[webauth_user] = 'scweber' and [data_types(5)] = '1'" ;
 }
 
 $recordList = REDCap::getData('array', null, $fieldList, null,

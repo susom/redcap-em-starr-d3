@@ -37,7 +37,7 @@ use \REDCap;
         $ar = array_filter($ar0, function ($element) {
             return is_string($element) && '' !== trim($element);
         });
-        if ($ft === '1' || $ft === '3') {
+        if ($ft === '1' || $ft === '3') { // date ranges
             // uploaded file has mrn or OMOP person_id accompanied by two dates
             // first verify that all dates can be parsed as dates that fall within the last 20 years and not in the future
             // then strip them all off before sending them to the API for validation
@@ -51,24 +51,21 @@ use \REDCap;
         }
         $module->emDebug('ar is ' . print_r($ar,TRUE));
         // now make an API call to validate the MRNs
-        if ($ft === '3' || $ft === '4') {
-            $params = $module->retrieveIdToken();
-            if ($ft === '3') {
-                $newar = array();
-                $l = 0;
-                $m = 0;
-                $n = 0;
-                foreach ($ar as &$value) {
-                    $components = explode(',', $value);
-                    $newar[] = $components[0];
-                }
-                $returnedList = $module->mrnApiPost($pid, $newar, $params['token'], $params['url']);
-            } else {
-                $returnedList = $module->mrnApiPost($pid, $ar, $params['token'], $params['url']);
+
+        $params = $module->retrieveIdToken();
+        if ($ft === '3' | $ft === '1') {
+            $newar = array(); // strip dates
+            foreach ($ar as &$value) {
+                $components = explode(',', $value);
+                $newar[] = $components[0];
             }
-            // now process the returned list to see what we got back
-            $module->emDebug('returned list ' . print_r($returnedList, TRUE));
+        } else {
+            $newar = $ar;
         }
+        $url = ($ft === '1' || $ft === '2') ? str_replace('mrn', 'omopid', $params['url']) : $params['url'];
+        $returnedList = $module->idApiPost($pid, $newar, $params['token'], $url, ($ft === '1' || $ft === '2'));
+        // now process the returned list to see what we got back
+        $module->emDebug('returned list ' . print_r($returnedList, TRUE));
 
         // next step is to compare the two lists and assemble an error report
         // if the two lists are identical, tell the user "Input validation success: all <n> supplied IDs are recognized"

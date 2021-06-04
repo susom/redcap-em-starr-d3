@@ -1,6 +1,8 @@
 <?php
 namespace Stanford\StarrDataDeliveryonDemand;
 
+use \REDCap;
+use Exception;
 require_once "emLoggerTrait.php";
 
 class StarrDataDeliveryonDemand extends \ExternalModules\AbstractExternalModule {
@@ -40,11 +42,9 @@ class StarrDataDeliveryonDemand extends \ExternalModules\AbstractExternalModule 
                 "message" => "* Internal Access problem - please contact the REDCap team");
         }
 
-
         return array("status" => 1,
             "token" => $token,
             "url" => $api_url);
-
     }
 
     function validateDate($myDateString) {
@@ -115,7 +115,7 @@ class StarrDataDeliveryonDemand extends \ExternalModules\AbstractExternalModule 
     }
 
     // send the MRNs to the validity API
-    function mrnApiPost($pid, $mrns, $token, $url) {
+    function idApiPost($pid, $mrns, $token, $url, $isOmop) {
         global $module ;
         // Use the STARR API to see if these MRNs are valid
         $body = array("mrns" => $mrns);

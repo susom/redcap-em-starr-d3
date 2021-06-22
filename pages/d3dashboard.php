@@ -7,34 +7,23 @@ global $module ;
 
 $fieldList = array('record_id', 'datetime_1','datetime_2','datetime_3','datetime_4','datetime_5','datetime_6','nero_gcp_name', 'irb_number', 'project_title', 'webauth_user', 'dpa_omop', 'dataset_name_omop', 'data_types', 'status') ;
 
-$module->emDebug("*****username :" . $_GET["uname"]) ;
-
 $sunetid = $_SERVER['REMOTE_USER'];
 $module->emDebug("*****Global Sunet ID :" . $sunetid) ;
+if (isset($sunetid)) {
+    $include_logic = "[webauth_user]='" . $sunetid . "' and [data_types(5)] = '1'" ;
+    $recordList = REDCap::getData('array', null, $fieldList, null,
+        null, null, null, null, $include_logic);
+    $hideTutorial = sizeof($recordList) > 0 ? 'hidden' : '';
+    $hideDt = sizeof($recordList) === 0 ?  'hidden' : '';
+    $toggleBtnLabel = sizeof($recordList) > 0 ? 'Show' : 'Hide';
 
-if(isset($_GET['uname']) && !empty($_GET['uname'])){
-    $module->emDebug("filter records on username ".$_GET["uname"]) ;
-    $include_logic = "[webauth_user]='" . $_GET["uname"] . "' and [data_types(5)] = '1'" ;
-} else {
-    $module->emDebug("Printing results for scweber ***********") ;
-    $include_logic = "[webauth_user] = 'scweber' and [data_types(5)] = '1'" ;
-}
-
-$recordList = REDCap::getData('array', null, $fieldList, null,
-    null, null, null, null, $include_logic);
-
-$hideTutorial = sizeof($recordList) > 0 ? 'hidden' : '';
-$hideDt = sizeof($recordList) === 0 ?  'hidden' : '';
-$toggleBtnLabel = sizeof($recordList) > 0 ? 'Show' : 'Hide';
-
-foreach($recordList as $key => $eventData) {
-    foreach($eventData as $eventId => $record) {
-        $module->emDebug(" Record Id ". $key . " event id ". $eventId) ;
-        $module->emDebug($record) ;
-        $module->emDebug("IRB ".$record->irb_number . " Title :" . $record["project_title"]) ;
+    foreach($recordList as $key => $eventData) {
+        foreach($eventData as $eventId => $record) {
+            $module->emDebug(" Record Id ". $key . " event id ". $eventId) ;
+            $module->emDebug($record) ;
+            $module->emDebug("IRB ".$record->irb_number . " Title :" . $record["project_title"]) ;
+        }
     }
-}
-
 ?>
 <!doctype html>
 <html lang="en">
@@ -147,6 +136,7 @@ foreach($recordList as $key => $eventData) {
 
     <p>
         To get started, please <span style="font-size: larger">first review the documentation below,</span> then navigate to <a href="https://redcap.stanford.edu/plugins/gethelp/ric.php">this intake form</a> and fill it out.
+        Alternately, click the "New Data Request" button at the end of this tutorial.
     </p>
     <p>
         To trigger an automated download of OMOP, you must tick the box labeled "Custom / identified OMOP" in the
@@ -240,7 +230,7 @@ foreach($recordList as $key => $eventData) {
             the MRNs checkbox. Click 'Create Cohort'.
         </li>
         <li>
-            Navigate to your newly created chart review. If it does not appear in the list simply refresh your browser and try again.
+            Navigate to your newly created chart review. If it does not appear in the list of your available cohorts in the upper left of the Chart Review tool, simply refresh your browser and try again.
         </li>
         <li>
             In the upper right, there is a panel listing the various types of clinical data associated with your cohort. Tick the "Patient Info" box
@@ -251,10 +241,15 @@ foreach($recordList as $key => $eventData) {
             leaving you with a file that can be used to specify the patients for your custom OMOP dataset.
         </li>
     </ol>
-    </p>
+
     <p></p>
     <hr/>
     <p></p>
+</div>
+
+<div id="newRequest" class="col-11  " >
+    <a href="https://redcap.stanford.edu/plugins/gethelp/ric.php" class="btn btn-info" role="button">New Data Request</a>
+<p>&nbsp;</p>
 </div>
 
 <div id="dashboard" class="card col-11 mx-auto <?php echo $hideDt ?>" >
@@ -310,3 +305,17 @@ foreach($recordList as $key => $eventData) {
 
 </body>
 </html>
+<?php
+} else {
+?>
+<!doctype html>
+<html lang="en">
+<head>
+</head>
+<body>
+Please authenticate in your browser with WebAuth, e.g. by browsing to <a href="https://stanfordyou.stanford.edu/">https://stanfordyou.stanford.edu/</a>, then return to this page.
+</body>
+</html>
+<?php
+}
+?>

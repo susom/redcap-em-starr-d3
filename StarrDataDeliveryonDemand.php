@@ -114,7 +114,7 @@ class StarrDataDeliveryonDemand extends \ExternalModules\AbstractExternalModule 
         return $returnStruct;
     }
 
-    // send the MRNs to the validity API
+    // send the Ids to the validity API
     function idApiPost($pid, $mrns, $token, $url, $isOmop) {
         global $module ;
         // Use the STARR API to see if these MRNs are valid
@@ -138,7 +138,7 @@ class StarrDataDeliveryonDemand extends \ExternalModules\AbstractExternalModule 
         }
 
         return array("status" => 1,
-            "validatedMrns" => $mrnInfo);
+            "validatedIds" => $mrnInfo);
     }
 
     /**

@@ -76,9 +76,9 @@ use \REDCap;
         if ($returnedList['status'] === '0') {
             echo "We are currently experiencing technical difficulties. Please notify REDCap Help by browsing to <a href='http://med.stanford.edu/researchit.html'>med.stanford.edu/researchit.html</a> and clicking the 'Request a Consultation' button. ";
         } else {
-            // first check for duplicates. first create a new list with no blanks so we don't confound invalid mrns with duplicates
+            // first check for duplicates. first create a new list with no blanks so we don't confound invalid ids with duplicates
             $instructions = '';
-            $filtered = array_filter($returnedList['validatedMrns'], function ($element) {
+            $filtered = array_filter($returnedList['validatedIds'], function ($element) {
                 global $module;
                 $isEmpty = ('' !== trim($element));
                 $module->emDebug('element in list ' . print_r($element, TRUE). ' is_string: '.is_string($element). ' isempty? '.$isEmpty);

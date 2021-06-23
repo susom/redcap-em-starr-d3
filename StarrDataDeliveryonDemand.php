@@ -1,6 +1,7 @@
 <?php
 namespace Stanford\StarrDataDeliveryonDemand;
 
+use MicrosoftAzure\Storage\Blob\Models\PageWriteOption;
 use \REDCap;
 use Exception;
 require_once "emLoggerTrait.php";
@@ -8,10 +9,54 @@ require_once "emLoggerTrait.php";
 class StarrDataDeliveryonDemand extends \ExternalModules\AbstractExternalModule {
 
     use emLoggerTrait;
-
+    public $project;
+    public $fieldList;
+    public $dataDictionary;
     public function __construct() {
         parent::__construct();
-        // Other code to run when object is instantiated
+        try {
+            if (isset($_GET['pid'])) {
+                $this->project = new \Project(filter_var($_GET['pid'], FILTER_SANITIZE_NUMBER_INT));
+                $this->dataDictionary = $this->project->metadata;
+            }
+            $this->fieldList = array(
+                'record_id',
+                'date_of_initial_completion',
+                'principal_name',
+                'principal_email',
+                'principal_phone',
+                'appointment',
+                'curated_department',
+                'funding',
+                'pubplan',
+                'research',
+                'requestor_is_pi',
+                'pi',
+                'irb_number',
+                'cancer_data',
+                'sci_member',
+                'project_title',
+                'research_description',
+                'inquiry_detail',
+                'data_types',
+                'other_clinical_desc',
+                'cohort_of_interest_defn',
+                'cohort_defn_file_omop',
+                'nero_gcp_name',
+                'dataset_name_omop',
+                'tables_omop',
+                'hippa_identifiers_omop',
+                'dpa_omop',
+                'recurring_data_omop',
+                'recurrence_sched_omop',
+                'timing_omop',
+                'deadline_specifics_omop',
+                'datetime_1','datetime_2','datetime_3','datetime_4','datetime_5','datetime_6',
+                'status');
+
+        } catch (\Exception $e) {
+            echo $e->getMessage();
+        }
     }
 
     // used to pick up the access token needed to invoke the MRN validity API
@@ -60,6 +105,33 @@ class StarrDataDeliveryonDemand extends \ExternalModules\AbstractExternalModule 
         }
         $this->emDebug('validating ' . $myDateString . ' ' . $ds . ' ok? ' . ($myDateString === $ds));
         return $myDateString === $ds;
+    }
+
+    function generateMetadata() {
+        /* let metamap = {
+                funding_1:'Funded - Grant',
+                funding_2:'Funded - Departmental/Gift',
+                funding_10:'Seeking Funding',
+                funding_20:'Unfunded',
+                funding_99:'Funding Status Unknown',
+            }
+        $this->getProject()->metadata*/
+        $str =  'let metamap = {';
+        foreach ($this->fieldList as $field) {
+            $lov = $this->dataDictionary[$field]['element_enum'];
+            if (strlen($lov) > 0) {
+                foreach(explode("\\n", $lov) as $value)
+                $str .= trim($field) . '_' . trim($this->str_replace_first(", ", ": '", $value) ). "',\n";
+            }
+        }
+        $str .= "};";
+        return $str;
+    }
+
+    function str_replace_first($from, $to, $content) {
+        $from = '/'.preg_quote($from, '/').'/';
+
+        return preg_replace($from, $to, $content, 1);
     }
 
     function verifyDates($listWithDates) {

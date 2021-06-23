@@ -6,9 +6,11 @@ use \REDCap;
 global $module ;
 
 $fieldList = array('record_id', 'datetime_1','datetime_2','datetime_3','datetime_4','datetime_5','datetime_6','nero_gcp_name', 'irb_number', 'project_title', 'webauth_user', 'dpa_omop', 'dataset_name_omop', 'data_types', 'status') ;
-
+//$module->emDebug(print_r($module->dataDictionary, true));
+$module->emDebug($module->generateMetadata());
 $sunetid = $_SERVER['REMOTE_USER'];
 $module->emDebug("*****Global Sunet ID :" . $sunetid) ;
+$sunetid = 'scweber';
 if (isset($sunetid)) {
     $include_logic = "[webauth_user]='" . $sunetid . "' and [data_types(5)] = '1'" ;
     $recordList = REDCap::getData('array', null, $fieldList, null,
@@ -37,7 +39,7 @@ if (isset($sunetid)) {
 
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap4.min.css" />
 
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" ></script>
 
     <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
     <style>
@@ -49,7 +51,7 @@ if (isset($sunetid)) {
             font-weight:lighter;
         }
         .card-title {
-            background-color:rgb(131, 19, 16);
+            background-color:#8C1515;
             color:white;
         }
         #jobsTable {
@@ -61,7 +63,17 @@ if (isset($sunetid)) {
         .hidden {
             display: none;
         }
-
+        td.details-control {
+            background: url("<?php echo $module->getUrl('images/details_open.png') ?>") no-repeat center center;
+            cursor: pointer;
+        }
+        tr.details td.details-control {
+            background: url("<?php echo $module->getUrl('images/details_close.png') ?>") no-repeat center center;
+        }
+        .page-item.active .page-link {
+            background-color: #009ABB;
+            border-color: #009ABB;
+        }
     </style>
     <title>Clinical Data Dashboard</title>
     <script>
@@ -75,10 +87,105 @@ if (isset($sunetid)) {
             }
 
         }
-        $(document).ready(function() {
-            $('#jobsTable').DataTable({
-            });
 
+        function format ( d, metamap ) {
+            return 'Project Owner: '+d.principal_name+' ('+d.principal_email+'), '+metamap['appointment_'+d.appointment]+', '+metamap['curated_department_'+d.curated_department]+'<br>'+
+                'IRB: '+d.irb_number+'<br>'+
+                'Funding: '+metamap['funding_'+d.funding]+'<br>'+
+                'Research Description: '+d.research_description+'<br>'+
+                'Inquiry: '+d.inquiry_detail+'<br>'+
+                'Cohort: '+d.cohort_of_interest_defn+'<br>'+
+                'Destination: '+d.nero_gcp_name+':'+d.dataset_name_omop+'<br>'+
+                'Tables: '+
+                (d.tables_omop[1] === "1"? metamap['tables_omop_1'] : '')+' '+
+                (d.tables_omop[2] === "1"? metamap['tables_omop_2'] : '')+' '+
+                (d.tables_omop[6] === "1"? metamap['tables_omop_6'] : '')+' '+
+                (d.tables_omop[7] === "1"? metamap['tables_omop_7'] : '')+' '+
+                (d.tables_omop[8] === "1"? metamap['tables_omop_8'] : '')+' '+
+                (d.tables_omop[9] === "1"? metamap['tables_omop_9'] : '')+' '+
+                (d.tables_omop[10] === "1"? metamap['tables_omop_10'] : '')+' '+
+                (d.tables_omop[11] === "1"? metamap['tables_omop_11'] : '')+' '+
+                '<br>'+
+                'HIPAA Identifiers: '+
+                (d.hippa_identifiers_omop[1] === "1"? metamap['hippa_identifiers_omop_1'] : '')+' '+
+                (d.hippa_identifiers_omop[2] === "1"? metamap['hippa_identifiers_omop_2'] : '')+' '+
+                (d.hippa_identifiers_omop[3] === "1"? metamap['hippa_identifiers_omop_3'] : '')+' '+
+                (d.hippa_identifiers_omop[99] === "1"? metamap['hippa_identifiers_omop_99'] : '')+' '+ "<br>" +
+                'DPA: ' + d.dpa_omop + "<br>" +
+                'Recurring: '+metamap['recurring_data_omop_'+d.recurring_data_omop]+' '+d.recurrence_sched_omop+'<br>'+
+                'Timing: '+metamap['timing_omop'+d.timing_omop]+' '+d.deadline_specifics_omop+'<br>'+
+                'Request Received:' + d.datetime_1 + "<br>" +
+                'Process Started:' + d.datetime_2 + "<br>" +
+                'Cohort Validation:' + d.datetime_3 + "<br>" +
+                'Prepared and Awaiting QA:' + d.datetime_4 + "<br>" +
+                'QA Complete:' + d.datetime_5 + "<br>" +
+                'Data Delivered on Nero:' + d.datetime_6 + "<br>"
+            ;
+        }
+        $(document).ready(function() {
+           /* let metamap = {
+                funding_1:'Funded - Grant',
+                funding_2:'Funded - Departmental/Gift',
+                funding_10:'Seeking Funding',
+                funding_20:'Unfunded',
+                funding_99:'Funding Status Unknown',
+            } */
+
+            <?php echo $module->generateMetadata(); ?>
+
+            var dt = $('#jobsTable').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "ajax": "<?php echo $module->getUrl('pages/request-detail.php') ?>",
+                "columns": [
+                    {
+                        "class":          "details-control",
+                        "orderable":      false,
+                        "data":           null,
+                        "defaultContent": ""
+                    },
+                    { "data": "record_id" },
+                    { "data": "date_of_initial_completion" },
+                    { "data": "project_title" },
+                    { "data": "omop" },
+                    { "data": "dataset_name_omop" },
+                    { "data": "status" }
+
+                ],
+                "order": [[1, 'asc']]
+            } );
+            // Array to track the ids of the details displayed rows
+            var detailRows = [];
+
+            $('#jobsTable tbody').on( 'click', 'tr td.details-control', function () {
+                var tr = $(this).closest('tr');
+                var row = dt.row( tr );
+                var idx = $.inArray( tr.attr('id'), detailRows );
+
+                if ( row.child.isShown() ) {
+                    tr.removeClass( 'details' );
+                    row.child.hide();
+
+                    // Remove from the 'open' array
+                    detailRows.splice( idx, 1 );
+                }
+                else {
+                    tr.addClass( 'details' );
+                    row.child( format( row.data(), metamap ) ).show();
+
+                    // Add to the 'open' array
+                    if ( idx === -1 ) {
+                        detailRows.push( tr.attr('id') );
+                    }
+                }
+            } );
+
+            // On each draw, loop over the `detailRows` array and show any child rows
+            dt.on( 'draw', function () {
+                $.each( detailRows, function ( i, id ) {
+                    $('#'+id+' td.details-control').trigger( 'click' );
+                } );
+            } );
 
         } );
     </script>
@@ -254,43 +361,20 @@ if (isset($sunetid)) {
 
 <div id="dashboard" class="card col-11 mx-auto <?php echo $hideDt ?>" >
     <div class="card-body">
-        <h5 class="card-title px-2 py-2" >My Clinical Research Datasets <button id="toggleTutorialBtn" class="btn btn-secondary float-right mt-n1" onclick="toggleTutorial()"><?php echo $toggleBtnLabel ?> Tutorial</button></h5>
+        <h5 class="card-title px-2 py-2" >My Clinical Research Datasets <button id="toggleTutorialBtn" class="btn btn-info float-right mt-n1" onclick="toggleTutorial()"><?php echo $toggleBtnLabel ?> Tutorial</button></h5>
         <div class="card-text">
             <table id="jobsTable" class="table table-striped table-bordered" >
                 <thead>
                 <tr>
+                    <th></th>
                     <th>Job #</th>
                     <th>Requested On</th>
                     <th>Project</th>
                     <th>Data Type</th>
                     <th>Destination</th>
                     <th>Status</th>
-                    <th>Updated On</th>
                 </tr>
                 </thead>
-                <tbody>
-                <?php
-                foreach($recordList as $key => $eventData) {
-                    foreach($eventData as $eventId => $record) {
-                        ?>
-                        <tr>
-                            <td><?php echo $record["record_id"] ?></td>
-                            <td><?php echo $record["datetime_1"] ?></td>
-                            <td><?php echo $record["project_title"] .' ('. (!empty($record["irb_number"])?'IRB# '.$record["irb_number"]:'DPA-'.$record["dpa_omop"]) .')' ?></td>
-                            <td><?php echo 'OMOP' ?></td>
-                            <td><?php echo $record["nero_gcp_name"] . ':' .$record["dataset_name_omop"] ?></td>
-                            <td><?php echo $record["status"] ?></td>
-                            <td><?php if ( ! empty($record["datetime_6"])) {echo $record["datetime_6"];}
-                                else if (! empty($record["datetime_5"])) {echo $record["datetime_5"];}
-                                else if (! empty($record["datetime_4"])) {echo $record["datetime_4"];}
-                                else if (! empty($record["datetime_3"])) {echo $record["datetime_3"];}
-                                else if (! empty($record["datetime_2"])) {echo $record["datetime_2"];}
-                                ?></td>
-                        </tr>
-                        <?php
-                    }
-                }
-                ?>
             </table>
         </div>
     </div>

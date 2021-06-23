@@ -5,12 +5,12 @@ use \REDCap;
 
 global $module ;
 
-$fieldList = array('record_id', 'datetime_1','datetime_2','datetime_3','datetime_4','datetime_5','datetime_6','nero_gcp_name', 'irb_number', 'project_title', 'webauth_user', 'dpa_omop', 'dataset_name_omop', 'data_types', 'status') ;
+$fieldList = array('record_id',  'irb_number', 'project_title', 'webauth_user',  'status') ;
 //$module->emDebug(print_r($module->dataDictionary, true));
 $module->emDebug($module->generateMetadata());
 $sunetid = $_SERVER['REMOTE_USER'];
 $module->emDebug("*****Global Sunet ID :" . $sunetid) ;
-$sunetid = 'scweber';
+//$sunetid = 'scweber';
 if (isset($sunetid)) {
     $include_logic = "[webauth_user]='" . $sunetid . "' and [data_types(5)] = '1'" ;
     $recordList = REDCap::getData('array', null, $fieldList, null,

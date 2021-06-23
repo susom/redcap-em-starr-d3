@@ -18,7 +18,7 @@ function getRequestDetail() {
     global $module;
     $sunetid = $_SERVER['REMOTE_USER'];
     $module->emDebug("*****Global Sunet ID :" . $sunetid) ;
-    $sunetid = 'scweber';
+//    $sunetid = 'scweber';
     $module->emDebug(" sunet is ".$sunetid);
     if (isset($sunetid)) {
         $include_logic = "[webauth_user]='" . $sunetid . "' and [data_types(5)] = '1'";

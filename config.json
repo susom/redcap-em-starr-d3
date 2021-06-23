@@ -37,8 +37,10 @@
     ]
   },
   "no-auth-pages": [
-    "src/IntakeFormValidation"
+    "pages/d3dashboard",
+      "pages/request-detail"
   ],
+
   "system-settings": [
     {
       "key": "enable-system-debug-logging",

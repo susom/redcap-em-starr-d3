@@ -8,9 +8,8 @@ global $module ;
 $fieldList = array('record_id',  'irb_number', 'project_title', 'webauth_user',  'status') ;
 //$module->emDebug(print_r($module->dataDictionary, true));
 $module->emDebug($module->generateMetadata());
-$sunetid = $_SERVER['REMOTE_USER'];
-$module->emDebug("*****Global Sunet ID :" . $sunetid) ;
-//$sunetid = 'scweber';
+$sunetid  = \Authentication::tableBasedLogin();
+$module->emDebug("Authenticated user is:" . $sunetid) ;
 if (isset($sunetid)) {
     $include_logic = "[webauth_user]='" . $sunetid . "' and [data_types(5)] = '1'" ;
     $recordList = REDCap::getData('array', null, $fieldList, null,

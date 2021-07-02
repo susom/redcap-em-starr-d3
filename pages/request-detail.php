@@ -16,10 +16,8 @@ global $module ;
 
 function getRequestDetail() {
     global $module;
-    $sunetid = $_SERVER['REMOTE_USER'];
+    $sunetid = \Authentication::tableBasedLogin();
     $module->emDebug("*****Global Sunet ID :" . $sunetid) ;
-//    $sunetid = 'scweber';
-    $module->emDebug(" sunet is ".$sunetid);
     if (isset($sunetid)) {
         $include_logic = "[webauth_user]='" . $sunetid . "' and [data_types(5)] = '1'";
         $recordList = REDCap::getData('array', null, $$module->fieldList, null,

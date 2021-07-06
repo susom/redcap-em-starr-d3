@@ -136,7 +136,7 @@ if (isset($sunetid)) {
             var dt = $('#jobsTable').DataTable({
                 "processing": true,
                 "serverSide": true,
-                "ajax": "<?php echo $module->getUrl('pages/request-detail.php') ?>",
+                "ajax": "<?php echo $module->getUrl('pages/request-detail.php').'&NOAUTH' ?>",
                 "columns": [
                     {
                         "class":          "details-control",

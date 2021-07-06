@@ -29,15 +29,15 @@ function getRequestDetail() {
     $returnStruct["recordsTotal"] = sizeof($recordList);
     $returnStruct["recordsFiltered"] = sizeof($recordList);
     $returnStruct["data"] = array();
+    $i = 0;
     foreach($recordList as $key => $eventData) {
+//    $returnStruct["data"][$i]['updatedOn'] = 'N/A';
+        $returnStruct["data"][$i++]['omop'] = 'OMOP';
         foreach($eventData as $eventId => $record) {
             $returnStruct["data"][] = $record ;
         }
     }
-    $returnStruct["data"][0]['omop'] = 'OMOP';
 
-//    $returnStruct["data"][0]['updatedOn'] = 'N/A';
-    $module->emDebug(" * * * * * * OK * * * * * * ");
     $module->emDebug(print_r($returnStruct, TRUE));
     return $returnStruct;
 }

@@ -118,7 +118,8 @@ if (isset($sunetid)) {
                 'Cohort Validation:' + d.datetime_3 + "<br>" +
                 'Prepared and Awaiting QA:' + d.datetime_4 + "<br>" +
                 'QA Complete:' + d.datetime_5 + "<br>" +
-                'Data Delivered on Nero:' + d.datetime_6 + "<br>"
+                'Data Delivered on Nero:' + d.datetime_6 + "<br><br>" +
+                d.url
             ;
         }
         $(document).ready(function() {

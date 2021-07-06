@@ -7,7 +7,7 @@ global $module ;
 
 $fieldList = array('record_id',  'irb_number', 'project_title', 'webauth_user',  'status') ;
 //$module->emDebug(print_r($module->dataDictionary, true));
-\Authentication::authenticate();
+
 $sunetid  = $_SERVER['REMOTE_USER'];
 $module->emDebug("Authenticated user is:" . $sunetid) ;
 if (isset($sunetid)) {

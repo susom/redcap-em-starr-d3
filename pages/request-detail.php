@@ -16,7 +16,7 @@ global $module ;
 
 function getRequestDetail() {
     global $module;
-    \Authentication::authenticate();
+
     $sunetid  =  $_SERVER['REMOTE_USER'];
     $module->emDebug("*****Global Sunet ID :" . $sunetid) ;
     if (isset($sunetid)) {
